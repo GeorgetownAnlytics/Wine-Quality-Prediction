@@ -1,0 +1,20 @@
+group project requirement
+1. small dataset
+2. no NN. only supervised learning
+3. use linear regression model as the baseline model
+4. train multiple models and use bootstrap
+
+
+
+group8 topic
+dataset:
+https://www.bts.gov/information-gallery?field_product_type_target_id_1=151&keys=
+https://indiaai.gov.in/article/the-ten-best-open-source-datasets-for-ml-research
+https://archive.ics.uci.edu/datasets?skip=0&take=10&sort=desc&orderBy=NumHits&search=&Area=Other
+https://github.com/Azure/OpenDatasetsNotebooks/
+https://registry.opendata.aws/
+https://archive.ics.uci.edu/dataset/186/wine+quality
+
+
+Red wine quality
+https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
