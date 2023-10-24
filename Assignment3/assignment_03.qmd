@@ -79,12 +79,19 @@ This section is graded based on the Github submission. Each person needs to have
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 import random
-from seaborn.palettes import color_palette
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn import metrics 
+import xgboost as xgb
+from time import strptime
+
 # set random seed
 random.seed(1296)
+
 
 ```
 
@@ -107,8 +114,21 @@ gr8_osi.describe()
 ## Split the dataset into a Training set and a Test set. Justify your preferred split (3 Points).
 
 ```{python}
-# First convert target variable "Revenue" from str to int
-gr8_osi['Revenue'] = np.select([gr8_osi.Revenue ==True, gr8_osi.Revenue ==False], [1,0], default=None)
+#drop na values from whole dataset
+gr8_osi = gr8_osi.dropna()
+# reformat categorfical columns to integers
+gr8_osi['Month'] = gr8_osi['Month'].str.replace('June','Jun')
+gr8_osi['Month'] = pd.to_datetime(gr8_osi.Month, format='%b').dt.month.astype(str)
+gr8_osi["Weekend"] = gr8_osi["Weekend"].astype(int)
+gr8_osi["Revenue"] = gr8_osi["Revenue"].astype(int)
+gr8_osi['VisitorType'] = np.select([gr8_osi.VisitorType =='Returning_Visitor', gr8_osi.VisitorType=='New_Visitor',gr8_osi.VisitorType=='Other'], [0,1,2], default=None)
+
+#check data type again
+gr8_osi.info()
+
+#convert TrafficType column to integer
+gr8_osi['VisitorType'].astype(int)
+
 # split train and test dataset
 # In this step, we decide to keep 70% of the data for training for and 30% for testing
 gr8_osi_X = gr8_osi.loc[:, gr8_osi.columns != 'Revenue'].to_numpy()
@@ -146,12 +166,36 @@ Execute a classification routine using RandomForestClassifier(), BaggingClassifi
 # Classification with GridSearchCV (8 Points):
 
 Replicate the classification from Q2 using GridsearchCV().
+### Random Forest Classification with GridSearchCV:
 ```{python}
-# Add code here
+# split train and test dataset
+# In this step, we decide to keep 70% of the data for training for and 30% for testing
+gr8_osi_X = gr8_osi.loc[:, gr8_osi.columns != 'Revenue'].to_numpy()
+gr8_osi_y = gr8_osi.loc[:, gr8_osi.columns == 'Revenue'].to_numpy()
+gr8_osiX_train, gr8_osiX_test, gr8_osiy_train, gr8_osiy_test = train_test_split(
+    gr8_osi_X, gr8_osi_y, test_size=0.30, random_state=0)
+
+# Defining hyperparameter space with max_depth, min_sample_split
+hyperparameter_grid = {'max_depth':[2,4,6,8,10], 
+                      'n_estimators': np.arange(5,30,5)}
+gs_rfc = GridSearchCV(estimator=RandomForestClassifier(random_state=0), param_grid=hyperparameter_grid, n_jobs=-1, cv=5)
+gs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display gridsearch results in dataframe
+gs_rfc_result=pd.DataFrame(index=range(0,len(gs_rfc.cv_results_['mean_score_time'])),columns=['param_max_depth','param_n_estimators', 'mean_test_score', 'std_test_score'])
+gs_rfc.cv_results_.keys()
+for i in ['param_max_depth','param_n_estimators', 'mean_test_score', 'std_test_score']:
+    gs_rfc_result[i]=gs_rfc.cv_results_[i]
+```
+### Bagging Classification with GridSearchCV:
+```{python}
 
 ```
 
+### XG Boost Classification with GridSearchCV:
+```{python}
 
+```
 
 # Classification with RandomSearchCV (8 Points):
 
