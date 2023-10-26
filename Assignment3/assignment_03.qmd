@@ -263,7 +263,7 @@ print(rs_bag_result)
 ```{python}
 # Defining hyperparameter space with 
 distributions = {
-    'device': ['cuda'],
+    'device': ['cpu'],
     'eta': [0.1,0.3,0.5,0.8,0.9],
     'gamma': [0,1,5,10,100,1000],
     'max_depth' : [0,1,2,3,4,5,6,10]
@@ -286,6 +286,8 @@ rs_xgb_result = pd.DataFrame(rs_xgb.cv_results_)[[ 'param_eta','param_gamma','pa
 
 print(rs_xgb_result)
 ```
+
+
 # Comparison and Analysis (5 Points):
 
 Compare the results from Q2, Q3, and Q4. Describe the best hyperparameters for all three experiments.
