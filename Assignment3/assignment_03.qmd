@@ -87,12 +87,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn import metrics 
 import xgboost as xgb
+from xgboost import XGBClassifier
 from time import strptime
-
+import warnings
+warnings.filterwarnings('ignore')
 # set random seed
 random.seed(1296)
-
-
 ```
 
 ## Load the dataset and display the dataframe (2 Points).
@@ -166,7 +166,6 @@ Execute a classification routine using RandomForestClassifier(), BaggingClassifi
 # Classification with GridSearchCV (8 Points):
 
 Replicate the classification from Q2 using GridsearchCV().
-### Random Forest Classification with GridSearchCV:
 ```{python}
 # split train and test dataset
 # In this step, we decide to keep 70% of the data for training for and 30% for testing
@@ -174,11 +173,22 @@ gr8_osi_X = gr8_osi.loc[:, gr8_osi.columns != 'Revenue'].to_numpy()
 gr8_osi_y = gr8_osi.loc[:, gr8_osi.columns == 'Revenue'].to_numpy()
 gr8_osiX_train, gr8_osiX_test, gr8_osiy_train, gr8_osiy_test = train_test_split(
     gr8_osi_X, gr8_osi_y, test_size=0.30, random_state=0)
+```
 
-# Defining hyperparameter space with max_depth, min_sample_split
+### Random Forest Classification with GridSearchCV:
+```{python}
+# Defining hyperparameter space with max_depth, n_estimators
 hyperparameter_grid = {'max_depth':[2,4,6,8,10], 
-                      'n_estimators': np.arange(5,30,5)}
-gs_rfc = GridSearchCV(estimator=RandomForestClassifier(random_state=0), param_grid=hyperparameter_grid, n_jobs=-1, cv=5)
+                      'n_estimators': [5,10,50,100,200,500,1000]}
+
+# Create GridsSearch model with Random Forest
+gs_rfc = GridSearchCV(
+  estimator=RandomForestClassifier(random_state=0),
+   param_grid=hyperparameter_grid, 
+   n_jobs=-1, 
+   cv=5)
+
+# Fit GridSearch model
 gs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
 
 # display gridsearch results in dataframe
@@ -186,25 +196,66 @@ gs_rfc_result=pd.DataFrame(index=range(0,len(gs_rfc.cv_results_['mean_score_time
 gs_rfc.cv_results_.keys()
 for i in ['param_max_depth','param_n_estimators', 'mean_test_score', 'std_test_score']:
     gs_rfc_result[i]=gs_rfc.cv_results_[i]
+
+gs_rfc_result.sort_values(by='mean_test_score',ascending= False)
 ```
+
 ### Bagging Classification with GridSearchCV:
 ```{python}
+# Defining hyperparameter space with n_estimators, max_features, boostrap
+hyperparameter_grid_bg = {
+  'n_estimators': [5,10,50,100,200,500,1000],
+  #'n_estimators': [5,100],
+  'max_features': [0.1, 0.2, 0.5, 0.8, 0.90, 1.0],
+  #'max_features': [0.1, 0.90],
+  'bootstrap': [True, False]
+}
+
+# Create GridsSearch model with Bagging
+gs_bgc = GridSearchCV(
+  estimator=BaggingClassifier(),
+  param_grid=hyperparameter_grid_bg,
+  n_jobs=-1,
+  cv=5
+)
+
+# Fit the GridSearch model
+gs_bgc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Display Gridsearch result in dataframe
+gs_bgc_result=pd.DataFrame(gs_bgc.cv_results_)[['param_max_features','param_n_estimators', 'param_bootstrap', 'mean_test_score', 'std_test_score']]
+gs_bgc_result.sort_values(by='mean_test_score', ascending=False)
 
 ```
 
 ### XG Boost Classification with GridSearchCV:
 ```{python}
+# Defining hyperparameter space with n_estimators, max_features, boostrap
+hyperparameter_grid_xgb = {
+  'gamma':[0.1,0.3,0.5],
+  'min_child_weight':[6,10,12],
+  'max_depth': [2,3,4,5,6]
+}
 
+# Create GridsSearch model with xgboost
+gs_xgb = GridSearchCV(
+  estimator=XGBClassifier(),
+  param_grid=hyperparameter_grid_xgb,
+  n_jobs=-1,
+  cv=5
+)
+
+# Fit the GridSearch model
+gs_xgb.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Display Gridsearch result in dataframe
+gs_xgb_result=pd.DataFrame(gs_xgb.cv_results_)[['param_gamma','param_min_child_weight', 'param_max_depth', 'mean_test_score', 'std_test_score']]
+gs_xgb_result.sort_values(by='mean_test_score', ascending=False)
 ```
 
 # Classification with RandomSearchCV (8 Points):
 
 Replicate the classification from Q2 using RandomSearchCV().
-```{python}
-#Import needed library
-from sklearn.model_selection import RandomizedSearchCV
-from xgboost import XGBClassifier
-```
 
 ### Random Forest Classification with RandomSearchCV()
 ```{python}
