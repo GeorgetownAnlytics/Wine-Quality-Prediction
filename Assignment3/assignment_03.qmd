@@ -208,8 +208,7 @@ from scipy.stats import uniform
 
 ### Random Forest Classification with RandomSearchCV()
 ```{python}
-# Add code here
-# Defining hyperparameter space with max_depth, min_sample_split
+# Defining hyperparameter space with max_depth, n_estimators
 distributions = {
     'max_depth': [10, 20, 30, 40, 50, None, 100],
     'n_estimators': [1,5,10, 50, 100, 200,1000]
@@ -228,7 +227,34 @@ rs_rfc = RandomizedSearchCV(
 rs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
 
 # display search results in dataframe
-rs_rfc_result = pd.DataFrame(rs_rfc.cv_results_)[['param_max_depth', 'param_n_estimators', 'mean_test_score', 'std_test_score']]
+rs_rfc_result = pd.DataFrame(rs_rfc.cv_results_)[['param_max_depth', 'param_n_estimators', 'mean_test_score', 'std_test_score']].sort_values(by = 'mean_test_score',ascending= False)
+
+print(rs_rfc_result)
+```
+
+### Bagging Classification with RandomSearchCV()
+```{python}
+# Defining hyperparameter space with max_depth, n_estimators
+distributions = {
+    'random_state':[None, 1,2],
+    'n_estimators': [10,20,50,100],
+    'max_samples': [1,5,10]
+}
+
+Bagging = BaggingClassifier(random_state=0)
+
+rs_rfc = RandomizedSearchCV(
+    estimator=Bagging,
+    param_distributions=distributions,
+    random_state=0,
+    n_iter=10,
+    cv=5 
+)
+
+rs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display search results in dataframe
+rs_rfc_result = pd.DataFrame(rs_rfc.cv_results_)[[ 'param_random_state','param_n_estimators','param_max_samples','mean_test_score', 'std_test_score']].sort_values(by = 'mean_test_score',ascending= False)
 
 print(rs_rfc_result)
 ```
