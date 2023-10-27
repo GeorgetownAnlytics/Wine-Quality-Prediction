@@ -1,0 +1,401 @@
+---
+title: "Assignment 03"
+subtitle: "Hyperparameter Tunning - Group 8"
+date: 10/23/2023
+date-modified: last-modified
+date-format: long
+format:
+  html:
+    theme: [cosmo, theme.scss]
+    toc: true
+    embed-resources: true
+    number-sections: true
+author:
+  - name: Ahmed Khair
+    affiliations:
+      - id: afk46
+        name: Georgetown University
+        city: Washington
+        state: DC
+  - name: Jiazu Zhang 
+    affiliations:
+      - id: jz944
+  - name: Mengjia Wei
+    affiliations:
+      - id: mw1296
+
+---
+
+
+# Data Preparation (7 Points):
+
+```{python}
+# Loading the necessary packages
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+import random
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn import metrics 
+import xgboost as xgb
+from xgboost import XGBClassifier
+from time import strptime
+import warnings
+warnings.filterwarnings('ignore')
+# set random seed
+random.seed(1296)
+```
+
+## Load the dataset and display the dataframe (2 Points).
+
+```{python}
+# Load the csv file
+gr8_osi = pd.read_csv("datasets/online_shoppers_intention.csv", header=0)
+# Display the dataframe
+gr8_osi
+```
+
+## Use `describe` to provide statistics on the pandas Datafra me (2 Points).
+
+```{python}
+gr8_osi.describe()
+
+```
+
+## Split the dataset into a Training set and a Test set. Justify your preferred split (3 Points).
+
+```{python}
+#drop na values from whole dataset
+gr8_osi = gr8_osi.dropna()
+# reformat categorfical columns to integers
+gr8_osi['Month'] = gr8_osi['Month'].str.replace('June','Jun')
+gr8_osi['Month'] = pd.to_datetime(gr8_osi.Month, format='%b').dt.month.astype(str)
+gr8_osi["Weekend"] = gr8_osi["Weekend"].astype(int)
+gr8_osi["Revenue"] = gr8_osi["Revenue"].astype(int)
+gr8_osi['VisitorType'] = np.select([gr8_osi.VisitorType =='Returning_Visitor', gr8_osi.VisitorType=='New_Visitor',gr8_osi.VisitorType=='Other'], [0,1,2], default=None)
+
+#check data type again
+gr8_osi.info()
+
+#convert TrafficType column to integer
+gr8_osi['VisitorType'].astype(int)
+
+# split train and test dataset
+# In this step, we decide to keep 70% of the data for training for and 30% for testing
+gr8_osi_X = gr8_osi.loc[:, gr8_osi.columns != 'Revenue'].to_numpy()
+gr8_osi_y = gr8_osi.loc[:, gr8_osi.columns == 'Revenue'].to_numpy()
+gr8_osiX_train, gr8_osiX_test, gr8_osiy_train, gr8_osiy_test = train_test_split(
+    gr8_osi_X, gr8_osi_y, test_size=0.30, random_state=0)
+
+```
+
+# Classification Routine (12 Points):
+
+Execute a classification routine using RandomForestClassifier(), BaggingClassifier(), and XGboostclassifier(). Independently output the accuracy box plot as discussed in class. Use any package you are comfortable with (seaborn, matplotlib).
+
+## RandomForestClassifier():
+
+```{python}
+from sklearn.ensemble import RandomForestClassifier
+
+# Creating a RandomForestClassifier with the specified parameters
+
+random_forest_classifier = RandomForestClassifier(n_estimators=100, random_state= 42)
+
+# Fit the model
+random_forest_classifier.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Predicting using the test data
+random_forest_pred = random_forest_classifier.predict(gr8_osiX_test)
+
+# Calculating and print the accuracy score
+accuracy = random_forest_classifier.score(gr8_osiX_test, gr8_osiy_test)
+print("The accuracy of the Random Forest Model is:", accuracy)
+
+```
+
+## BaggingClassifier():
+
+```{python}
+# Creating a bagging classifer with the specified paramaters
+Bagging_classifier = BaggingClassifier(n_estimators=100, random_state= 100)
+
+# Fitting the model
+Bagging_classifier.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Predicting using the test data
+Bagging_classifier_pred = Bagging_classifier.predict(gr8_osiX_test)
+
+# Calculating and printing the accuracy score
+accuracy = Bagging_classifier.score(gr8_osiX_test, gr8_osiy_test)
+print("The accuracy of the bagging classifier is", accuracy)
+
+```
+
+## XGboostclassifier():
+
+```{python}
+# Creating a bagging classifer with the specified paramaters
+from xgboost import XGBClassifier
+xgboost = XGBClassifier(n_estimators=100, random_state= 42)
+
+# Fitting the model
+xgboost.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Predicting using the test data
+xgboost_pred = xgboost.predict(gr8_osiX_test)
+
+# Calculating and printing the accuracy score
+accuracy = xgboost.score(gr8_osiX_test, gr8_osiy_test)
+print("The accuracy of the xgboost classifier is", accuracy)
+```
+
+```{python}
+from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import cross_val_score
+
+# list of models
+def base_models():
+    models = dict()
+    models["Random Forest"] = RandomForestClassifier()
+    models["Bagging"] = BaggingClassifier()
+    models["XGB"] = XGBClassifier()
+    return models
+# Function to evaluate the list of models
+def eval_models(model):
+    cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+    scores = -cross_val_score(model, gr8_osiX_train, gr8_osiy_train, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1, error_score='raise')
+    return scores
+# evaluate the models and print results
+models = base_models()
+results, names = list(), list()
+for name, model in models.items():
+  scores = eval_models(model)
+  results.append(scores)
+  names.append(name)
+  print('>%s %.3f (%.3f)' % (name, scores.mean(), scores.std()))
+# store results in dataframe
+classmod = pd.DataFrame(np.transpose(results), columns = ["Random Forest","Bagging","XGB"])
+classmod = pd.melt(classmod.reset_index(), id_vars='index',value_vars=["Random Forest","Bagging","XGB"])
+```
+
+Accuracy Boxplot
+
+```{python}
+import plotly.express as px
+from plotly.subplots import make_subplots
+#import plotly.graph_objs as go
+import plotly.io as pio
+
+fig = px.box(classmod, x="variable", y="value",color="variable",points='all',
+labels={"variable": "Machine Learning Model",
+        "value": "RMS Error"
+        },title="Model Performance")
+fig.show()
+
+````
+
+# Classification with GridSearchCV (8 Points):
+
+Replicate the classification from Q2 using GridsearchCV().
+```{python}
+# split train and test dataset
+# In this step, we decide to keep 70% of the data for training for and 30% for testing
+gr8_osi_X = gr8_osi.loc[:, gr8_osi.columns != 'Revenue'].to_numpy()
+gr8_osi_y = gr8_osi.loc[:, gr8_osi.columns == 'Revenue'].to_numpy()
+gr8_osiX_train, gr8_osiX_test, gr8_osiy_train, gr8_osiy_test = train_test_split(
+    gr8_osi_X, gr8_osi_y, test_size=0.30, random_state=0)
+```
+
+### Random Forest Classification with GridSearchCV:
+```{python}
+# Defining hyperparameter space with max_depth, n_estimators
+hyperparameter_grid = {'max_depth':[2,4,6,8,10], 
+                      'n_estimators': [5,10,50,100,200,500,1000]}
+
+# Create GridsSearch model with Random Forest
+gs_rfc = GridSearchCV(
+  estimator=RandomForestClassifier(random_state=0),
+   param_grid=hyperparameter_grid, 
+   n_jobs=-1, 
+   cv=5)
+
+# Fit GridSearch model
+gs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display gridsearch results in dataframe
+gs_rfc_result=pd.DataFrame(index=range(0,len(gs_rfc.cv_results_['mean_score_time'])),columns=['param_max_depth','param_n_estimators', 'mean_test_score', 'std_test_score'])
+gs_rfc.cv_results_.keys()
+for i in ['param_max_depth','param_n_estimators', 'mean_test_score', 'std_test_score']:
+    gs_rfc_result[i]=gs_rfc.cv_results_[i]
+
+gs_rfc_result.sort_values(by='mean_test_score',ascending= False)
+```
+
+### Bagging Classification with GridSearchCV:
+```{python}
+# Defining hyperparameter space with n_estimators, max_features, boostrap
+hyperparameter_grid_bg = {
+  'n_estimators': [5,10,50,100,200,500,1000],
+  #'n_estimators': [5,100],
+  'max_features': [0.1, 0.2, 0.5, 0.8, 0.90, 1.0],
+  #'max_features': [0.1, 0.90],
+  'bootstrap': [True, False]
+}
+
+# Create GridsSearch model with Bagging
+gs_bgc = GridSearchCV(
+  estimator=BaggingClassifier(),
+  param_grid=hyperparameter_grid_bg,
+  n_jobs=-1,
+  cv=5
+)
+
+# Fit the GridSearch model
+gs_bgc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Display Gridsearch result in dataframe
+gs_bgc_result=pd.DataFrame(gs_bgc.cv_results_)[['param_max_features','param_n_estimators', 'param_bootstrap', 'mean_test_score', 'std_test_score']]
+gs_bgc_result.sort_values(by='mean_test_score', ascending=False)
+
+```
+
+### XG Boost Classification with GridSearchCV:
+```{python}
+# Defining hyperparameter space with n_estimators, max_features, boostrap
+hyperparameter_grid_xgb = {
+  'min_child_weight':[6,10,12],
+  'max_depth': [2,3,4,5,6],
+  'eta': [0.1,0.3,0.5,0.8,0.9],
+  'gamma': [0,0.1,0.3,0.5,1,5,10,100,1000],
+  'max_depth' : [0,1,2,3,4,5,6,10]
+}
+
+# Create GridsSearch model with xgboost
+gs_xgb = GridSearchCV(
+  estimator=XGBClassifier(),
+  param_grid=hyperparameter_grid_xgb,
+  n_jobs=-1,
+  cv=5
+)
+
+# Fit the GridSearch model
+gs_xgb.fit(gr8_osiX_train, gr8_osiy_train)
+
+# Display Gridsearch result in dataframe
+gs_xgb_result=pd.DataFrame(gs_xgb.cv_results_)[['param_gamma','param_min_child_weight', 'param_max_depth', 'mean_test_score', 'std_test_score']]
+gs_xgb_result.sort_values(by='mean_test_score', ascending=False)
+```
+
+# Classification with RandomSearchCV (8 Points):
+
+Replicate the classification from Q2 using RandomSearchCV().
+
+### Random Forest Classification with RandomSearchCV()
+```{python}
+# Defining hyperparameter space with max_depth, n_estimators
+distributions = {
+    'max_depth': [10, 20, 30, 40, 50, None, 100],
+    'n_estimators': [1,5,10, 50, 100, 200,1000]
+}
+
+randomforest = RandomForestClassifier(random_state=0)
+
+rs_rfc = RandomizedSearchCV(
+    estimator=randomforest,
+    param_distributions=distributions,
+    random_state=0,
+    n_iter=10,
+    cv=5 
+)
+
+rs_rfc.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display search results in dataframe
+
+
+
+rs_rfc_result=pd.DataFrame(index=range(0,len(rs_rfc.cv_results_['mean_score_time'])),columns=['param_max_depth', 'param_n_estimators', 'mean_test_score', 'std_test_score'])
+rs_rfc.cv_results_.keys()
+for i in ['param_max_depth', 'param_n_estimators', 'mean_test_score', 'std_test_score']:
+    rs_rfc_result[i]=rs_rfc.cv_results_[i]
+
+rs_rfc_result.sort_values(by='mean_test_score',ascending= False)
+```
+
+### Bagging Classification with RandomSearchCV()
+```{python}
+# Defining hyperparameter space with random_state, n_estimators,max_samples
+distributions = {
+    'random_state':[None, 1,2],
+    'n_estimators': [1,5,10,20,50,100],
+    'max_samples': [1,5,10]
+}
+
+Bagging = BaggingClassifier(random_state=0)
+
+rs_bag = RandomizedSearchCV(
+    estimator=Bagging,
+    param_distributions=distributions,
+    random_state=0,
+    n_iter=10,
+    cv=5 
+)
+
+rs_bag.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display search results in dataframe
+
+
+rs_bag_result=pd.DataFrame(index=range(0,len(rs_bag.cv_results_['mean_score_time'])),columns=['param_random_state','param_n_estimators','param_max_samples','mean_test_score', 'std_test_score'])
+rs_bag.cv_results_.keys()
+for i in ['param_random_state','param_n_estimators','param_max_samples','mean_test_score', 'std_test_score']:
+    rs_bag_result[i]=rs_bag.cv_results_[i]
+
+rs_bag_result.sort_values(by='mean_test_score',ascending= False)
+```
+
+### XGboost Classification with RandomSearchCV()
+```{python}
+# Defining hyperparameter space with 
+distributions = {
+    'device': ['cpu'],
+    'eta': [0.1,0.3,0.5,0.8,0.9],
+    'gamma': [0,0.1,0.3,0.5,1,5,10,100,1000],
+    'max_depth' : [0,1,2,3,4,5,6,10]
+}
+
+xgboost = XGBClassifier(random_state=0)
+
+rs_xgb = RandomizedSearchCV(
+    estimator=xgboost,
+    param_distributions=distributions,
+    random_state=0,
+    n_iter=10,
+    cv=5 
+)
+
+rs_xgb.fit(gr8_osiX_train, gr8_osiy_train)
+
+# display search results in dataframe
+
+
+rs_xgb_result=pd.DataFrame(index=range(0,len(rs_xgb.cv_results_['mean_score_time'])),columns=['param_eta','param_gamma','param_max_depth','mean_test_score', 'std_test_score'])
+rs_xgb.cv_results_.keys()
+for i in ['param_eta','param_gamma','param_max_depth','mean_test_score', 'std_test_score']:
+    rs_xgb_result[i]=rs_xgb.cv_results_[i]
+
+rs_xgb_result.sort_values(by='mean_test_score',ascending= False)
+```
+```
+
+
+# Comparison and Analysis (5 Points):
+
+Compare the results from Q2, Q3, and Q4. Describe the best hyperparameters for all three experiments.
+
+The highest accuracy obtained in the initial classification  routine was from the random forest classifier which obtained an accuracy of 89.2%. Additionally, in classification with GridSearchCV, xgboost classification with grid search cv obtained an accuracy of 90.8% with the following hype parameters: gamma = 10, min_child_weight = 12, and the max_depth = 6. Finally, in classification with RandomSearchCV, XG boost classification with RandomSearchCV returned an accuracy of 90.7% with the following hyperparameters: eta = 0.3, gamma = 5, max_depth = 4
