@@ -27,7 +27,7 @@ def hello_world():
         # make_picture('AgesAndHeight.pkl', model, np_arr, path)
     
         # load dataset
-        gr8_wq= pd.read_csv("C:/kirawei/GTU/6700/Project/dataset/winequality-red.csv",header=0)
+        gr8_wq= pd.read_csv("dataset/winequality-red.csv",header=0)
 
         # split the data
         gr8_X = gr8_wq.drop(['quality'], axis = 1)
