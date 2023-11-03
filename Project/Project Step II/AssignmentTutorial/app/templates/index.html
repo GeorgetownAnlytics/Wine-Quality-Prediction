@@ -1,0 +1,65 @@
+<!-- <center>
+    <img src="static/baseimage.png", height=600/>
+    <form method="POST">
+        <label>"The Quality of the Wine is..."</label>
+        <input name="text">
+        <input type="'submit">
+    </form>
+</center> -->
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Machine Learning Model Input</title>
+</head>
+<body>
+    <h1>Wine Quality Model</h1>
+    <h2>Below is the feature importance of the wine's variables</h2>
+    <img src = "../static/baseimage.png" alt = "Feature Importance"/>
+    <h2>Please input the data of the wine to test its quality: </h2>
+    <form action="{{url_for('form')}}" method="POST">
+        <label for="fixed-acidity">Fixed Acidity (In range from 4 - 20): </label>
+        <input type="text" id="fixed-acidity" name="fixed_acidity"><br><br>
+
+        <label for="volatile-acidity">Volatile Acidity (In range from 0.01 - 2.00):</label>
+        <input type="text" id="volatile-acidity" name="volatile_acidity"><br><br>
+
+        <label for="citric-acid ">Citric Acid (In range from 0 - 1):</label>
+        <input type="text" id="citric-acid" name="citric_acid"><br><br>
+
+        <label for="residual-sugar">Residual Sugar (In range from 0.5 - 15.5):</label>
+        <input type="text" id="residual-sugar" name="residual_sugar"><br><br>
+
+        <label for="chlorides">Chlorides (In range from 0 - 1):</label>
+        <input type="text" id="chlorides" name="chlorides"><br><br>
+
+        <label for="free-sulfur-dioxide">Free Sulfur Dioxide (In range from 1 - 100):</label>
+        <input type="text" id="free-sulfur-dioxide" name="free_sulfur_dioxide"><br><br>
+
+        <label for="total-sulfur-dioxide">Total Sulfur Dioxide (In range from 5 - 300):</label>
+        <input type="text" id="total-sulfur-dioxide" name="total_sulfur_dioxide"><br><br>
+        
+
+        <label for="density">Density (In range from 0.99 - 1.00):</label>
+        <input type="text" id="density" name="density"><br><br>
+
+        <label for="pH">pH (In range from 2.50 - 4.10):</label>
+        <input type="text" id="pH" name="pH"><br><br>
+
+        <label for="sulphates">Sulphates (In range from 0.01 - 2.50):</label>
+        <input type="text" id="sulphates" name="sulphates"><br><br>
+
+        <label for="alcohol">Alcohol:</label>
+        <input type="text" id="alcohol" name="alcohol"><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+
+    <br>
+    The wine quality is : {{pred}}
+    <br>
+</body>
+</html>
