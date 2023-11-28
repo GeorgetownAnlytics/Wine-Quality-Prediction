@@ -1,7 +1,7 @@
 import pickle
 
 def load_model():
-    model_path = "app/TrainedModel/model.sav"
+    model_path = "./TrainedModel/model.sav"
     model_obj = open(model_path, "rb")
     model = pickle.load(model_obj)
     return model

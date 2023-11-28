@@ -1,7 +1,6 @@
 from flask import Flask, render_template,request
 import numpy as np
 import pandas as pd
-import pickle
 from utils import *
 
 app = Flask(__name__)
@@ -21,7 +20,7 @@ app = Flask(__name__)
 #         return render_template("index.html", href=path) 
 # #    return "<p>Hello, World!</p>"
 
-@app.route('/form', methods = ["GET","POST"])
+@app.route('/', methods = ["GET","POST"])
 def form():
     if request.method == "GET": # get data from server
         return render_template("index.html")
