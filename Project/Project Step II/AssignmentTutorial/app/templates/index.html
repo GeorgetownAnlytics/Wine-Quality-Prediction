@@ -1,65 +1,87 @@
-<!-- <center>
-    <img src="static/baseimage.png", height=600/>
-    <form method="POST">
-        <label>"The Quality of the Wine is..."</label>
-        <input name="text">
-        <input type="'submit">
-    </form>
-</center> -->
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Machine Learning Model Input</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Wine Quality Model</h1>
-    <h2>Below is the feature importance of the wine's variables</h2>
-    <img src = "../static/baseimage.png" alt = "Feature Importance"/>
-    <h2>Please input the data of the wine to test its quality: </h2>
-    <form action="{{url_for('form')}}" method="POST">
-        <label for="fixed-acidity">Fixed Acidity (In range from 4 - 20): </label>
-        <input type="text" id="fixed-acidity" name="fixed_acidity"><br><br>
-
-        <label for="volatile-acidity">Volatile Acidity (In range from 0.01 - 2.00):</label>
-        <input type="text" id="volatile-acidity" name="volatile_acidity"><br><br>
-
-        <label for="citric-acid ">Citric Acid (In range from 0 - 1):</label>
-        <input type="text" id="citric-acid" name="citric_acid"><br><br>
-
-        <label for="residual-sugar">Residual Sugar (In range from 0.5 - 15.5):</label>
-        <input type="text" id="residual-sugar" name="residual_sugar"><br><br>
-
-        <label for="chlorides">Chlorides (In range from 0 - 1):</label>
-        <input type="text" id="chlorides" name="chlorides"><br><br>
-
-        <label for="free-sulfur-dioxide">Free Sulfur Dioxide (In range from 1 - 100):</label>
-        <input type="text" id="free-sulfur-dioxide" name="free_sulfur_dioxide"><br><br>
-
-        <label for="total-sulfur-dioxide">Total Sulfur Dioxide (In range from 5 - 300):</label>
-        <input type="text" id="total-sulfur-dioxide" name="total_sulfur_dioxide"><br><br>
+    <div class="container mt-4">
+        <h1 class="text-center">Wine Quality Model</h1>
+        <h2 class="text-center">Below is the feature importance of the wine's variables</h2>
+        <div class="text-center">
+            <img src="../static/baseimage.png" alt="Feature Importance" class="img-fluid">
+        </div>
         
+        <h2 class="mt-4">Please input the data of the wine to test its quality:</h2>
+        <form action="{{url_for('form')}}" method="POST">
+            <div class="form-group">
+                <label for="fixed-acidity">Fixed Acidity (In range from 4 - 20):</label>
+                <input type="text" class="form-control" id="fixed-acidity" name="fixed_acidity">
+            </div>
 
-        <label for="density">Density (In range from 0.99 - 1.00):</label>
-        <input type="text" id="density" name="density"><br><br>
+            <div class="form-group">
+                <label for="volatile-acidity">Volatile Acidity (In range from 0.01 - 2.00):</label>
+                <input type="text" class="form-control" id="volatile-acidity" name="volatile_acidity">
+            </div>
 
-        <label for="pH">pH (In range from 2.50 - 4.10):</label>
-        <input type="text" id="pH" name="pH"><br><br>
+            <div class="form-group">
+                <label for="citric-acid">Citric Acid (In range from 0 - 1):</label>
+                <input type="text" class="form-control" id="citric-acid" name="citric_acid">
+            </div>
 
-        <label for="sulphates">Sulphates (In range from 0.01 - 2.50):</label>
-        <input type="text" id="sulphates" name="sulphates"><br><br>
+            <div class="form-group">
+                <label for="residual-sugar">Residual Sugar (In range from 0.5 - 15.5):</label>
+                <input type="text" class="form-control" id="residual-sugar" name="residual_sugar">
+            </div>
 
-        <label for="alcohol">Alcohol:</label>
-        <input type="text" id="alcohol" name="alcohol"><br><br>
+            <div class="form-group">
+                <label for="chlorides">Chlorides (In range from 0 - 1):</label>
+                <input type="text" class="form-control" id="chlorides" name="chlorides">
+            </div>
 
-        <input type="submit" value="Submit">
-    </form>
+            <div class="form-group">
+                <label for="free-sulfur-dioxide">Free Sulfur Dioxide (In range from 1 - 100):</label>
+                <input type="text" class="form-control" id="free-sulfur-dioxide" name="free_sulfur_dioxide">
+            </div>
 
+            <div class="form-group">
+                <label for="total-sulfur-dioxide">Total Sulfur Dioxide (In range from 5 - 300):</label>
+                <input type="text" class="form-control" id="total-sulfur-dioxide" name="total_sulfur_dioxide">
+            </div>
 
-    <br>
-    The wine quality is : {{pred}}
-    <br>
+            <div class="form-group">
+                <label for="density">Density (In range from 0.99 - 1.00):</label>
+                <input type="text" class="form-control" id="density" name="density">
+            </div>
+
+            <div class="form-group">
+                <label for="pH">pH (In range from 2.50 - 4.10):</label>
+                <input type="text" class="form-control" id="pH" name="pH">
+            </div>
+
+            <div class="form-group">
+                <label for="sulphates">Sulphates (In range from 0.01 - 2.50):</label>
+                <input type="text" class="form-control" id="sulphates" name="sulphates">
+            </div>
+
+            <div class="form-group">
+                <label for="alcohol">Alcohol:</label>
+                <input type="text" class="form-control" id="alcohol" name="alcohol">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <br>
+        <div class="alert alert-info" role="alert">
+            The wine quality is: {{pred}}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js CDN -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
